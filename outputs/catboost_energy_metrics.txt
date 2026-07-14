@@ -1,0 +1,6 @@
+CatBoost — Energy Consumption Prediction
+========================================
+RMSE  : 194,874.40 Wh
+MAE   : 24,545.50 Wh
+R2    : 0.8492
+MAPE  : 3982.02%
