@@ -29,8 +29,8 @@ import numpy as np
 import os
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
-INPUT_FILE  = "data/features_charger.csv"
-OUTPUT_FILE = "data/features_energy_model.csv"
+INPUT_FILE  = "data/processed/features_charger.csv"
+OUTPUT_FILE = "data/processed/features_energy_model.csv"
 RANDOM_SEED = 42
 # ──────────────────────────────────────────────────────────────────────────────
 

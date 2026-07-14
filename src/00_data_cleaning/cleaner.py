@@ -21,8 +21,8 @@ import numpy as np
 import os
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
-INPUT_FILE         = "data/All_Merger.csv"
-OUTPUT_FILE        = "data/cleaned_data.csv"
+INPUT_FILE         = "data/raw/All_Merger.csv"
+OUTPUT_FILE        = "data/processed/cleaned_data.csv"
 STATION_ROW_CAP    = 300       # Max rows per charging station
 OUTLIER_PERCENTILE = 0.99      # Winsorize cap threshold
 RANDOM_SEED        = 42

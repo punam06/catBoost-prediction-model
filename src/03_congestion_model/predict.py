@@ -19,7 +19,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 MODEL_PATH = "models/catboost_congestion_model.cbm"
-DATA_PATH  = "data/features_station_model.csv"
+DATA_PATH  = "data/processed/features_station_model.csv"
 
 def load_resources():
     if not os.path.exists(MODEL_PATH):

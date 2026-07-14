@@ -26,11 +26,11 @@ def main():
         choice = input("Enter your choice (1/2/3/q): ").strip().lower()
         
         if choice == '1':
-            os.system("python3 src/04_predict.py")
+            os.system("python3 src/01_energy_model/predict.py")
         elif choice == '2':
-            os.system("python3 src/07_predict_soc.py")
+            os.system("python3 src/02_soc_model/predict.py")
         elif choice == '3':
-            os.system("python3 src/10_predict_congestion.py")
+            os.system("python3 src/03_congestion_model/predict.py")
         elif choice == 'q' or choice == 'quit':
             print("Exiting Prediction Hub. Have a great day!")
             sys.exit(0)

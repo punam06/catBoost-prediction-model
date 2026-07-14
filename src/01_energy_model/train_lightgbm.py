@@ -40,9 +40,9 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 warnings.filterwarnings("ignore")
 
 # ─── CONFIG ─────────────────────────────────────────────────────────────────
-RAW_FILE     = "data/All_Merger.csv"
+RAW_FILE     = "data/raw/All_Merger.csv"
 MODEL_DIR    = "models"
-OUTPUT_DIR   = "outputs"
+OUTPUT_DIR   = "outputs/energy_model"
 MODEL_FILE   = os.path.join(MODEL_DIR, "lightgbm_energy_model.txt")
 RANDOM_SEED  = 42
 TARGET_COL   = "max_energy_wh"

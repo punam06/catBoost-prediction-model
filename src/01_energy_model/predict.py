@@ -20,7 +20,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 MODEL_PATH = "models/catboost_energy_model.cbm"
-DATA_PATH  = "data/features_energy_model.csv"
+DATA_PATH  = "data/processed/features_energy_model.csv"
 
 def load_resources():
     if not os.path.exists(MODEL_PATH):

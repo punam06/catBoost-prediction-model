@@ -30,9 +30,9 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # ─── CONFIG ─────────────────────────────────────────────────────────────────
-INPUT_FILE   = "data/features_energy_model.csv"
+INPUT_FILE   = "data/processed/features_energy_model.csv"
 MODEL_DIR    = "models"
-OUTPUT_DIR   = "outputs"
+OUTPUT_DIR   = "outputs/energy_model"
 MODEL_FILE   = os.path.join(MODEL_DIR, "catboost_energy_model.cbm")
 RANDOM_SEED  = 42
 TARGET_COL   = "max_energy_wh"

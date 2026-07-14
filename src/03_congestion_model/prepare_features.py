@@ -10,8 +10,8 @@ import pandas as pd
 import numpy as np
 
 # ─── CONFIG ───────────────────────────────────────────────────────────────────
-INPUT_FILE  = "data/cleaned_data.csv"
-OUTPUT_FILE = "data/features_station_model.csv"
+INPUT_FILE  = "data/processed/cleaned_data.csv"
+OUTPUT_FILE = "data/processed/features_station_model.csv"
 RANDOM_SEED = 42
 # ──────────────────────────────────────────────────────────────────────────────
 

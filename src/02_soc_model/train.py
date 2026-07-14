@@ -1,7 +1,7 @@
 """
-09_train_station_model.py
-=========================
-Trains a CatBoostRegressor to predict Station Congestion (active_chargers).
+06_train_soc_model.py
+=====================
+Trains a CatBoostRegressor to predict the State of Charge (soc_pct).
 """
 
 import os
@@ -18,22 +18,22 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # ─── CONFIG ─────────────────────────────────────────────────────────────────
-INPUT_FILE   = "data/features_station_model.csv"
+INPUT_FILE   = "data/processed/features_soc_model.csv"
 MODEL_DIR    = "models"
-OUTPUT_DIR   = "outputs"
-MODEL_FILE   = os.path.join(MODEL_DIR, "catboost_congestion_model.cbm")
+OUTPUT_DIR   = "outputs/soc_model"
+MODEL_FILE   = os.path.join(MODEL_DIR, "catboost_soc_model.cbm")
 RANDOM_SEED  = 42
-TARGET_COL   = "active_chargers"
+TARGET_COL   = "soc_pct"
 
 CATBOOST_PARAMS = {
-    "iterations": 1000,
+    "iterations": 500,
     "learning_rate": 0.05,
-    "depth": 8,
+    "depth": 6,
     "l2_leaf_reg": 3,
     "loss_function": "RMSE",
     "eval_metric": "RMSE",
     "random_seed": RANDOM_SEED,
-    "verbose": 100,
+    "verbose": 50,
     "early_stopping_rounds": 50
 }
 # ─────────────────────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ def ensure_dirs():
 
 def load_data(filepath: str):
     print(f"\n{'='*60}")
-    print("  CatBoost — Station Congestion Prediction")
+    print("  CatBoost — SoC % Prediction")
     print(f"{'='*60}\n")
     if not os.path.exists(filepath):
         raise FileNotFoundError(f"[ERROR] '{filepath}' not found.")
@@ -53,10 +53,9 @@ def load_data(filepath: str):
     return df
 
 def split_and_prepare(df: pd.DataFrame):
-    # Exclude leakages (total_power_kw) and metadata
-    exclude = ["split", "timestamp", "total_power_kw", TARGET_COL]
+    exclude = ["split", "timestamp", TARGET_COL]
     feature_cols = [c for c in df.columns if c not in exclude]
-    cat_features = ["charging_station_id"]
+    cat_features = ["charging_station_id", "charger_id"]
     
     for col in feature_cols:
         if df[col].dtype == 'float64' and df[col].isna().sum() > 0:
@@ -89,28 +88,28 @@ def train_model(train_pool, val_pool):
     model = CatBoostRegressor(**CATBOOST_PARAMS)
     model.fit(train_pool, eval_set=val_pool)
     print(f"\n        Best iteration: {model.get_best_iteration()}")
-    print(f"        Best val RMSE : {model.get_best_score()['validation']['RMSE']:,.3f} chargers\n")
+    print(f"        Best val RMSE : {model.get_best_score()['validation']['RMSE']:,.2f} %\n")
     return model
 
 def evaluate_model(model, X_test, y_test):
     y_pred = model.predict(X_test)
-    y_pred = np.clip(y_pred, 0, None) # Cannot have negative active chargers
+    y_pred = np.clip(y_pred, 0, 100) # SoC is between 0 and 100
     
     rmse = np.sqrt(mean_squared_error(y_test, y_pred))
     mae  = mean_absolute_error(y_test, y_pred)
     r2   = r2_score(y_test, y_pred)
     
     print(f"[EVAL]  Test Set Metrics:")
-    print(f"        RMSE  : {rmse:>12,.3f} chargers")
-    print(f"        MAE   : {mae:>12,.3f} chargers")
+    print(f"        RMSE  : {rmse:>12,.2f} %")
+    print(f"        MAE   : {mae:>12,.2f} %")
     print(f"        R²    : {r2:>12.4f}\n")
 
-    metrics_path = os.path.join(OUTPUT_DIR, "catboost_congestion_metrics.txt")
+    metrics_path = os.path.join(OUTPUT_DIR, "catboost_soc_metrics.txt")
     with open(metrics_path, "w") as f:
-        f.write("CatBoost — Station Congestion Prediction\n")
+        f.write("CatBoost — SoC Prediction\n")
         f.write("=" * 40 + "\n")
-        f.write(f"RMSE  : {rmse:,.3f} chargers\n")
-        f.write(f"MAE   : {mae:,.3f} chargers\n")
+        f.write(f"RMSE  : {rmse:,.2f} %\n")
+        f.write(f"MAE   : {mae:,.2f} %\n")
         f.write(f"R2    : {r2:.4f}\n")
     
     return y_pred
@@ -121,22 +120,23 @@ def plot_feature_importance(model, feature_cols):
     df_imp = df_imp.sort_values('importance', ascending=False).head(20)
 
     plt.figure(figsize=(10, 8))
-    sns.barplot(x='importance', y='feature', data=df_imp, palette='rocket')
-    plt.title("CatBoost (Congestion) — Feature Importances", fontsize=13)
+    sns.barplot(x='importance', y='feature', data=df_imp, palette='magma')
+    plt.title("CatBoost (SoC) — Feature Importances", fontsize=13)
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, "catboost_congestion_feature_importance.png"), dpi=150)
+    plt.savefig(os.path.join(OUTPUT_DIR, "catboost_soc_feature_importance.png"), dpi=150)
     plt.close()
 
 def plot_actual_vs_predicted(y_test, y_pred):
     plt.figure(figsize=(8, 7))
-    plt.scatter(y_test, y_pred, alpha=0.3, s=15, color="teal")
-    lim = max(y_test.max(), y_pred.max())
-    plt.plot([0, lim], [0, lim], "r--", linewidth=1.5)
-    plt.xlabel("Actual Active Chargers")
-    plt.ylabel("Predicted Active Chargers")
-    plt.title("CatBoost (Congestion) — Actual vs Predicted", fontsize=13)
+    plt.scatter(y_test, y_pred, alpha=0.5, s=15, color="purple")
+    plt.plot([0, 100], [0, 100], "r--", linewidth=1.5)
+    plt.xlabel("Actual SoC %")
+    plt.ylabel("Predicted SoC %")
+    plt.title("CatBoost (SoC) — Actual vs Predicted", fontsize=13)
+    plt.xlim(0, 100)
+    plt.ylim(0, 100)
     plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, "catboost_congestion_actual_vs_predicted.png"), dpi=150)
+    plt.savefig(os.path.join(OUTPUT_DIR, "catboost_soc_actual_vs_predicted.png"), dpi=150)
     plt.close()
 
 def save_model(model):
