@@ -1,0 +1,44 @@
+"""
+master_predictor.py
+===================
+A unified terminal menu to run all EV prediction models.
+
+Usage:
+  source venv/bin/activate
+  python3 master_predictor.py
+"""
+
+import os
+import sys
+
+def main():
+    while True:
+        print("\n" + "="*60)
+        print(" ⚡ MULYTIC EV AI PREDICTION HUB ⚡")
+        print("="*60)
+        print("Select a prediction model to run:")
+        print("  [1] Energy Consumption Predictor (Charger Level)")
+        print("  [2] State of Charge (SoC %) Predictor (Charger Level)")
+        print("  [3] Station Congestion Predictor (Station Level)")
+        print("  [q] Quit")
+        print("-" * 60)
+        
+        choice = input("Enter your choice (1/2/3/q): ").strip().lower()
+        
+        if choice == '1':
+            os.system("python3 src/04_predict.py")
+        elif choice == '2':
+            os.system("python3 src/07_predict_soc.py")
+        elif choice == '3':
+            os.system("python3 src/10_predict_congestion.py")
+        elif choice == 'q' or choice == 'quit':
+            print("Exiting Prediction Hub. Have a great day!")
+            sys.exit(0)
+        else:
+            print("[ERROR] Invalid choice. Please enter 1, 2, 3, or q.")
+        
+        # Pause before showing the menu again
+        input("\nPress ENTER to return to the main menu...")
+
+if __name__ == "__main__":
+    main()
