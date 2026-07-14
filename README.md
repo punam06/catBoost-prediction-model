@@ -1,53 +1,18 @@
 # ⚡ CatBoost Prediction Models — EV Charging Stations
 
-A suite of machine learning prediction models built with **CatBoost** for electric vehicle (EV) charging station analytics. The project uses real-world charging station telemetry data to forecast energy consumption, demand patterns, charging states, and station load.
+A complete suite of machine learning prediction models built with **CatBoost** for electric vehicle (EV) charging station analytics. This project uses real-world telemetry data to accurately forecast **energy consumption**, **state of charge (SoC)**, and **station congestion**.
 
 ---
 
 ## 📋 Project Overview
 
-This project develops **5 predictive models** using CatBoost gradient boosting, each targeting a different aspect of EV charging station operations:
+We have built and deployed **3 production-grade predictive models** to help optimize EV charging operations:
 
-| # | Model | Target | Status |
-|---|-------|--------|--------|
-| 1 | **Energy Consumption Prediction** | `max_energy_wh` | 🔨 In Progress |
-| 2 | **Demand Forecasting** | Active session count / hourly demand | 📋 Planned |
-| 3 | **Charging State (SoC) Prediction** | `soc_pct` | 📋 Planned |
-| 4 | **Leftover Energy Estimation** | Remaining capacity | 📋 Planned |
-| 5 | **Congestion / Load Forecasting** | Aggregated station load | 📋 Planned |
-
----
-
-## 📊 Dataset
-
-**File**: `merged.csv`
-
-| Property | Value |
-|----------|-------|
-| Rows | 90,507 |
-| Columns | 13 |
-| Unique Stations | 1,284 |
-| Unique Chargers | 7,600 |
-| Time Range | Nov 2025 — Apr 2026 |
-| Granularity | 15-minute intervals |
-
-### Column Descriptions
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `charging_station_id` | string | Unique station identifier |
-| `charger_id` | string | Unique charger identifier |
-| `timestamp` | datetime | Observation timestamp (UTC) |
-| `avg_pwr_kw` | float | Average power draw (kW) |
-| `max_energy_wh` | float | Maximum energy consumed (Wh) |
-| `active_session_count` | int | Number of active charging sessions |
-| `soc_pct` | float | State of charge (%), ~96% missing |
-| `hour` | int | Hour of day (0–23) |
-| `day_of_week` | int | Day of week (0=Mon, 6=Sun) |
-| `month` | int | Month of year |
-| `hour_sin` | float | Cyclical hour encoding (sine) |
-| `hour_cos` | float | Cyclical hour encoding (cosine) |
-| `is_weekend` | int | Weekend flag (0/1) |
+| # | Model | Goal | Accuracy Metric |
+|---|-------|------|-----------------|
+| 1 | **Energy Consumption** | Predict how much energy (Wh) a car will consume during its session. | MAE: ~24.5 kWh ($R^2$: 85%) |
+| 2 | **State of Charge (SoC)** | Predict the current battery percentage (%) of a plugged-in EV. | MAE: 9.7% |
+| 3 | **Station Congestion** | Predict the exact number of active chargers in use at an entire station. | MAE: 0.29 Chargers ($R^2$: 75%) |
 
 ---
 
@@ -70,7 +35,7 @@ This project develops **5 predictive models** using CatBoost gradient boosting, 
    ```bash
    python3 -m venv venv
    source venv/bin/activate        # macOS / Linux
-   # venv\Scripts\activate          # Windows
+   # venv\Scripts\activate         # Windows
    ```
 
 3. **Install dependencies**
@@ -78,94 +43,87 @@ This project develops **5 predictive models** using CatBoost gradient boosting, 
    pip install -r requirements.txt
    ```
 
-### Dependencies
+---
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| catboost | ≥ 1.2 | Gradient boosting model |
-| pandas | ≥ 2.0 | Data manipulation |
-| numpy | ≥ 1.24 | Numerical computing |
-| scikit-learn | ≥ 1.3 | Metrics & splitting |
-| matplotlib | ≥ 3.7 | Visualization |
-| seaborn | ≥ 0.13 | Statistical plots |
-| shap | ≥ 0.52 | Model interpretability |
+## 🎮 Interactive Testing (Master Predictor)
+
+You can easily test all three AI models straight from your terminal! We have built a unified CLI Hub.
+
+Run the following command:
+```bash
+python3 master_predictor.py
+```
+
+This will open an interactive menu:
+```text
+ ⚡ MULYTIC EV AI PREDICTION HUB ⚡
+============================================================
+Select a prediction model to run:
+  [1] Energy Consumption Predictor (Charger Level)
+  [2] State of Charge (SoC %) Predictor (Charger Level)
+  [3] Station Congestion Predictor (Station Level)
+  [q] Quit
+```
+Just select a model, hit Enter to use the default realistic testing values, and watch the model predict the future!
 
 ---
 
 ## 📁 Project Structure
 
-```
+The codebase is cleanly organized by Model Domain:
+
+```text
 catBoost-prediction-model/
 │
-├── merged.csv                           # Raw dataset
-├── requirements.txt                     # Python dependencies
-├── README.md                            # Project documentation
-├── energy_consumption_prediction.py     # Model 1 — main pipeline
+├── master_predictor.py                  # CLI Hub to test all models
+├── requirements.txt                     # Dependencies
+├── README.md                            # Documentation
 │
-├── src/                                 # Source modules
-│   ├── __init__.py
-│   ├── data_preprocessing.py            # Data cleaning & loading
-│   ├── feature_engineering.py           # Feature creation & transformation
-│   ├── model_training.py               # CatBoost training & configuration
-│   ├── evaluation.py                   # Metrics, plots & interpretation
-│   └── utils.py                        # Helper functions & constants
+├── data/                                # Local Data Storage
+│   ├── raw/                             # Original uncleaned CSVs
+│   └── processed/                       # Cleaned data and engineered features
 │
-├── models/                             # Saved CatBoost models (.cbm)
+├── src/                                 # Python Scripts
+│   ├── 00_data_cleaning/                # Initial data sanitization script
+│   ├── 01_energy_model/                 # Energy Consumption scripts
+│   ├── 02_soc_model/                    # State of Charge scripts
+│   └── 03_congestion_model/             # Station Congestion scripts
 │
-└── outputs/                            # Generated plots & metrics
-    ├── feature_importance.png
-    ├── actual_vs_predicted.png
-    ├── residuals.png
-    └── evaluation_metrics.txt
+├── models/                              # Trained CatBoost binaries (.cbm)
+│   ├── catboost_energy_model.cbm
+│   ├── catboost_soc_model.cbm
+│   └── catboost_congestion_model.cbm
+│
+└── outputs/                             # Evaluation Metrics and Graphs
+    ├── energy_model/                    # Feature importance, actual vs predicted
+    ├── soc_model/
+    └── congestion_model/
 ```
 
 ---
 
 ## 🏗️ Model Pipeline
 
-Each prediction model follows the same structured pipeline:
+Each of the three models strictly follows the same robust pipeline to prevent data leakage and ensure real-world accuracy:
 
-```
-Data Loading → Cleaning → Feature Engineering → Train/Test Split → CatBoost Training → Evaluation → Export
-```
-
-1. **Data Preprocessing** — Handle missing values, remove negatives/outliers, parse timestamps
-2. **Feature Engineering** — Lag features, rolling averages, peak hour flags, station-level aggregations
-3. **Train/Test Split** — Time-based split to prevent data leakage
-4. **Model Training** — CatBoost with native categorical feature handling
-5. **Evaluation** — RMSE, MAE, R², MAPE + visualizations
-6. **Interpretation** — Feature importance & SHAP analysis
-
----
-
-## 📈 Evaluation Metrics
-
-| Metric | Description |
-|--------|-------------|
-| **RMSE** | Root Mean Squared Error — penalizes large errors |
-| **MAE** | Mean Absolute Error — average error magnitude |
-| **R²** | Coefficient of determination — variance explained |
-| **MAPE** | Mean Absolute Percentage Error |
+1. **Data Aggregation/Prep** — Grouping data by Charger or Station, handling missing values.
+2. **Feature Engineering** — Generating cyclic time features (hour sine/cosine) and historical aggregates.
+3. **Time-Based Splitting** — Splitting train/val/test sequentially through time (never randomly) to simulate real forecasting.
+4. **Model Training** — Using `CatBoostRegressor` natively handling categorical IDs without heavy one-hot encoding.
+5. **Evaluation** — Generating RMSE, MAE, R² metrics and SHAP/Importance visualizations.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Model**: [CatBoost](https://catboost.ai/) — gradient boosting on decision trees
+- **Model**: [CatBoost](https://catboost.ai/) — fast, scalable gradient boosting on decision trees.
 - **Language**: Python 3
 - **Visualization**: Matplotlib, Seaborn
-- **Interpretability**: SHAP
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
+- **Interpretability**: Feature Importance
 
 ---
 
 ## 👤 Author
 
 **Punam**
-
 - GitHub: [@punam06](https://github.com/punam06)
