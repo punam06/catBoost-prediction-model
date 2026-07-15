@@ -84,7 +84,26 @@ We proved our models are highly accurate on unseen data:
 
 ---
 
-## 🔮 5. Future Roadmap: Implementing the Next Models
+## 🐍 5. Python Scripts & Executables Reference
+
+The codebase is driven by highly modular Python scripts. Every file has a specific, singular purpose—ranging from data sanitization to graph generation. 
+
+Here is the master reference table of what each script does and how it contributes to the pipeline:
+
+| Script Name | Location | Primary Purpose | Key Outputs |
+|-------------|----------|-----------------|-------------|
+| `cleaner.py` | `src/00_data_cleaning/` | Merges raw data, removes physically impossible outliers, handles duplicates, and caps overly heavy stations using strict chronological preservation. | `cleaned_data.csv` |
+| `prepare_features.py` | `src/01`, `02`, `03` | Feature Engineering. Converts timestamps into sine/cosine waves, creates rolling averages and lag features, and safely calculates historical aggregates without leaking future data. | `features_*.csv` |
+| `train.py` / `train_catboost.py` | `src/01`, `02`, `03` | **Model Training & Graph Generation.** Loads features, executes the time-based Train/Val/Test splits, trains the CatBoost models, and automatically generates performance visualisations. | `.cbm` models, `.png` graphs, `.txt` metrics |
+| `qa_full_verification.py` | Root Directory | **Model Accuracy Analysis & Verification.** A professional QA script that inspects all data files for nulls/negatives, completely rebuilds the feature sets, re-trains all models from scratch, and prints a final accuracy comparison table. | Terminal Output (Verification Report) |
+| `predict.py` | `src/01`, `02`, `03` | Standalone interactive scripts for testing individual models. They prompt the user for input (Date, Time, Power) and output a human-readable forecast. | Terminal Output (Prediction) |
+| `master_predictor.py` | Root Directory | **The CLI Hub.** A unified command-line interface that wraps all the individual `predict.py` scripts into a single, user-friendly interactive menu. | Interactive Terminal UI |
+
+> **How Graphs Are Generated:** You never have to manually plot graphs. Simply running any `train.py` script automatically evaluates the model on the unseen Test Set and uses Matplotlib/Seaborn to save fresh "Feature Importance" and "Actual vs Predicted" `.png` files directly into the `outputs/` folder.
+
+---
+
+## 🔮 6. Future Roadmap: Implementing the Next Models
 
 To continue expanding the intelligence of our EV prediction hub, the next logical steps are building models for **Demand Forecasting** and **Leftover Energy**. If your evaluators ask about "future work," here is the exact blueprint for how you can explain building them:
 
