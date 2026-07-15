@@ -58,15 +58,24 @@ def step2_resolve_near_duplicates(df: pd.DataFrame) -> pd.DataFrame:
     """
     Step 2: Resolve near-duplicates.
     Same (charging_station_id, charger_id, timestamp) but different metric values.
-    Keep the row with the highest max_energy_wh (most informative reading).
+    Take the mean of continuous variables to smooth out sensor glitches.
     """
     before = len(df)
     key_cols = ["charging_station_id", "charger_id", "timestamp"]
-    df = (df.sort_values("max_energy_wh", ascending=False)
-            .drop_duplicates(subset=key_cols, keep="first")
-            .reset_index(drop=True))
+    
+    # Identify numeric columns for averaging, excluding keys
+    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    numeric_cols = [c for c in numeric_cols if c not in key_cols]
+    
+    # Group by key columns and take mean for numeric, first for categorical/other
+    agg_dict = {col: "mean" for col in numeric_cols}
+    other_cols = [c for c in df.columns if c not in numeric_cols + key_cols]
+    agg_dict.update({col: "first" for col in other_cols})
+    
+    df = df.groupby(key_cols, as_index=False).agg(agg_dict)
+    
     removed = before - len(df)
-    print(f"[Step 2]  Resolve near-duplicates        | -{removed:>6,} rows  ->  {len(df):,} remaining")
+    print(f"[Step 2]  Resolve near-duplicates (mean) | -{removed:>6,} rows  ->  {len(df):,} remaining")
     return df
 
 
@@ -82,19 +91,25 @@ def step3_remove_negatives(df: pd.DataFrame) -> pd.DataFrame:
 
 def step4_cap_outliers(df: pd.DataFrame, percentile: float = OUTLIER_PERCENTILE) -> pd.DataFrame:
     """
-    Step 4: Value capping (Winsorization) at the given percentile.
-    Clips extreme values to the cap threshold — no rows are removed.
+    Step 4: Drop extreme outliers instead of independent clipping.
+    Dropping preserves the physical relationship between power and energy.
     """
+    before = len(df)
     cap_cols = ["max_energy_wh", "avg_pwr_kw"]
     caps = {}
+    
+    # Calculate thresholds
     for col in cap_cols:
-        cap_val = df[col].quantile(percentile)
-        df[col] = df[col].clip(upper=cap_val)
-        caps[col] = cap_val
-
-    print(f"[Step 4]  Cap outliers at P{int(percentile*100)}            |   (clip)        ->  {len(df):,} remaining")
-    print(f"            max_energy_wh capped at : {caps['max_energy_wh']:>15,.0f} Wh")
-    print(f"            avg_pwr_kw    capped at : {caps['avg_pwr_kw']:>15,.2f} kW")
+        caps[col] = df[col].quantile(percentile)
+        
+    # Keep rows where BOTH metrics are below their respective 99th percentile threshold
+    mask = (df["max_energy_wh"] <= caps["max_energy_wh"]) & (df["avg_pwr_kw"] <= caps["avg_pwr_kw"])
+    df = df[mask].reset_index(drop=True)
+    
+    removed = before - len(df)
+    print(f"[Step 4]  Drop outliers > P{int(percentile*100)}            | -{removed:>6,} rows  ->  {len(df):,} remaining")
+    print(f"            max_energy_wh cutoff at : {caps['max_energy_wh']:>15,.0f} Wh")
+    print(f"            avg_pwr_kw    cutoff at : {caps['avg_pwr_kw']:>15,.2f} kW")
     return df
 
 
@@ -150,19 +165,21 @@ def step7_fix_types_and_add_period(df: pd.DataFrame) -> pd.DataFrame:
 def step8_cap_station_rows(df: pd.DataFrame, cap: int = STATION_ROW_CAP,
                             seed: int = RANDOM_SEED) -> pd.DataFrame:
     """
-    Step 8: Station representation capping.
-    Any station with more than `cap` rows is randomly downsampled to exactly `cap` rows.
-    Stations below the cap are kept in full to preserve diversity.
+    Step 8: Station representation capping (Chronological).
+    Any station with more than `cap` rows retains its most recent `cap` contiguous rows.
+    This preserves the time-series continuity for future modeling.
     """
     before = len(df)
-    rng = np.random.default_rng(seed)
-
     idx_keep = []
     over_cap_stations = 0
 
+    # Ensure data is sorted by timestamp before capping
+    df = df.sort_values(["charging_station_id", "timestamp"])
+
     for sid, grp in df.groupby("charging_station_id"):
         if len(grp) > cap:
-            chosen = rng.choice(grp.index, size=cap, replace=False)
+            # Take the most recent 'cap' rows to preserve time-series continuity
+            chosen = grp.tail(cap).index
             idx_keep.extend(chosen)
             over_cap_stations += 1
         else:
@@ -171,7 +188,7 @@ def step8_cap_station_rows(df: pd.DataFrame, cap: int = STATION_ROW_CAP,
     df = df.loc[idx_keep].reset_index(drop=True)
     removed = before - len(df)
     print(f"[Step 8]  Station cap ({cap} rows/station) | -{removed:>6,} rows  ->  {len(df):,} remaining")
-    print(f"            Stations reduced to {cap} rows: {over_cap_stations}")
+    print(f"            Stations sequentially reduced to {cap} rows: {over_cap_stations}")
     return df
 
 

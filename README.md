@@ -11,8 +11,8 @@ We have built and deployed **3 production-grade predictive models** to help opti
 | # | Model | Goal | Accuracy Metric |
 |---|-------|------|-----------------|
 | 1 | **Energy Consumption** | Predict how much energy (Wh) a car will consume during its session. | MAE: ~24.5 kWh ($R^2$: 85%) |
-| 2 | **State of Charge (SoC)** | Predict the current battery percentage (%) of a plugged-in EV. | MAE: 9.7% |
-| 3 | **Station Congestion** | Predict the exact number of active chargers in use at an entire station. | MAE: 0.29 Chargers ($R^2$: 75%) |
+| 2 | **State of Charge (SoC)** | Predict the current battery percentage (%) of a plugged-in EV. | MAE: 4.8% ($R^2$: 77%) |
+| 3 | **Station Congestion** | Predict the exact number of active chargers in use at an entire station. | MAE: 0.25 Chargers ($R^2$: 79%) |
 
 ---
 

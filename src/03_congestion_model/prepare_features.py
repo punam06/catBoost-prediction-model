@@ -52,6 +52,23 @@ def main():
     
     print(f"        Resulted in {len(station_df):,} station-level snapshots.\n")
     
+    print("[FEAT]  Generating Time-Series Lags and Rolling Averages...")
+    station_df = station_df.sort_values(by=["charging_station_id", "timestamp"])
+    
+    # Generate lag and rolling features per station
+    station_df["lag_1_active"] = station_df.groupby("charging_station_id")["active_chargers"].shift(1)
+    station_df["lag_2_active"] = station_df.groupby("charging_station_id")["active_chargers"].shift(2)
+    station_df["lag_1_power_kw"] = station_df.groupby("charging_station_id")["total_power_kw"].shift(1)
+    
+    station_df["roll_3_active"] = station_df.groupby("charging_station_id")["active_chargers"].shift(1).rolling(window=3, min_periods=1).mean()
+    station_df["roll_6_active"] = station_df.groupby("charging_station_id")["active_chargers"].shift(1).rolling(window=6, min_periods=1).mean()
+    
+    # Drop rows with NaN (due to shifts)
+    before_drop = len(station_df)
+    station_df = station_df.dropna().reset_index(drop=True)
+    print(f"        Dropped {before_drop - len(station_df):,} rows due to initial lag NaNs.")
+    print(f"        Remaining station-level snapshots: {len(station_df):,}\n")
+    
     # 2. Time-based Split (Train: P1, P2 + 80% P3 | Val: 10% P3 | Test: 10% P3)
     station_df = station_df.sort_values(by='timestamp').reset_index(drop=True)
     

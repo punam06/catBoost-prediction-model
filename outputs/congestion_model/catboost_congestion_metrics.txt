@@ -1,5 +1,5 @@
 CatBoost — Station Congestion Prediction
 ========================================
-RMSE  : 0.573 chargers
-MAE   : 0.292 chargers
-R2    : 0.7538
+RMSE  : 0.745 chargers
+MAE   : 0.253 chargers
+R2    : 0.7893

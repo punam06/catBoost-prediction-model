@@ -26,7 +26,7 @@ RANDOM_SEED  = 42
 TARGET_COL   = "active_chargers"
 
 CATBOOST_PARAMS = {
-    "iterations": 1000,
+    "iterations": 1500,
     "learning_rate": 0.05,
     "depth": 8,
     "l2_leaf_reg": 3,
@@ -34,7 +34,7 @@ CATBOOST_PARAMS = {
     "eval_metric": "RMSE",
     "random_seed": RANDOM_SEED,
     "verbose": 100,
-    "early_stopping_rounds": 50
+    "early_stopping_rounds": 100
 }
 # ─────────────────────────────────────────────────────────────────────────────
 
