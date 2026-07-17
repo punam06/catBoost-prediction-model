@@ -1,0 +1,5 @@
+CatBoost — Leftover Prediction
+========================================
+RMSE  : 6,114.55 Wh
+MAE   : 1,416.83 Wh
+R2    : 0.9578

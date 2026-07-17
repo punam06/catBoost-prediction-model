@@ -1,4 +1,4 @@
-CatBoost — SoC Prediction
+CatBoost — Soc Prediction
 ========================================
 RMSE  : 9.81 %
 MAE   : 4.80 %
