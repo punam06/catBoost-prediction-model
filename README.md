@@ -599,6 +599,27 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Requirements
+All packages are verified to install cleanly and work together:
+
+| Package | Version | Purpose |
+|---|---|---|
+| `catboost` | >=1.2 | Core ML algorithm (CatBoost Regressor) |
+| `pandas` | >=2.0 | Data manipulation and DataFrame operations |
+| `numpy` | >=1.24 | Numerical computing and math operations |
+| `scikit-learn` | >=1.3 | Metrics (RMSE, MAE, R²) and evaluation |
+| `matplotlib` | >=3.7 | Graph generation (scatter plots, histograms) |
+| `seaborn` | >=0.13 | Statistical visualization (feature importance) |
+| `shap` | >=0.52 | Model explainability (SHAP feature contributions) |
+| `fastapi` | >=0.110 | REST API framework |
+| `uvicorn[standard]` | >=0.29 | ASGI server to run the FastAPI app |
+| `pydantic` | >=2.0 | Request/response validation and serialization |
+
+```bash
+# Verify installation
+pip list | grep -iE "catboost|pandas|numpy|sklearn|matplotlib|seaborn|shap|fastapi|uvicorn|pydantic"
+```
+
 ### Option A: Interactive CLI Menu
 ```bash
 python3 master_predictor.py
@@ -653,7 +674,7 @@ catBoost-prediction-model/
 │
 ├── master_predictor.py                  # Unified CLI hub (options 1-6)
 ├── qa_full_verification.py              # Full pipeline QA verification
-├── compare_cli_vs_api.py               # CLI vs API prediction comparison
+├── compare_cli_vs_api.py               # Optional: CLI vs API comparison (not in repo)
 ├── requirements.txt                     # Python dependencies
 ├── README.md                            # This file
 ├── model_training_architecture.md       # ML methodology deep-dive
@@ -678,7 +699,7 @@ catBoost-prediction-model/
 │   ├── 01_energy_model/
 │   │   ├── prepare_features.py          # Feature engineering + leakage fixes
 │   │   ├── train_catboost.py            # CatBoost training + evaluation
-│   │   ├── train_lightgbm.py            # LightGBM training (comparison)
+│   │   ├── train_lightgbm.py            # Legacy LightGBM comparison (not in requirements)
 │   │   └── predict.py                   # Interactive CLI prediction
 │   │
 │   ├── 02_soc_model/
