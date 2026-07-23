@@ -71,6 +71,22 @@ def main():
         hour_str = input("Enter Hour (0-23) [default: 17]: ").strip()
         hour = int(float(hour_str)) if hour_str else 17
         
+        print("\n  Lag/Rolling features (press ENTER to default to 0):")
+        lag1_str = input("  lag_1_active (active chargers 1 interval ago) [default: 0]: ").strip()
+        lag1_active = float(lag1_str) if lag1_str else 0.0
+        
+        lag2_str = input("  lag_2_active (active chargers 2 intervals ago) [default: 0]: ").strip()
+        lag2_active = float(lag2_str) if lag2_str else 0.0
+        
+        lag_pwr_str = input("  lag_1_power_kw (power draw 1 interval ago) [default: 0]: ").strip()
+        lag1_power_kw = float(lag_pwr_str) if lag_pwr_str else 0.0
+        
+        roll3_str = input("  roll_3_active (rolling avg active over last 3) [default: 0]: ").strip()
+        roll3_active = float(roll3_str) if roll3_str else 0.0
+        
+        roll6_str = input("  roll_6_active (rolling avg active over last 6) [default: 0]: ").strip()
+        roll6_active = float(roll6_str) if roll6_str else 0.0
+        
         # 2. Compute Features
         day_of_week = target_date.weekday()
         month = target_date.month
@@ -88,7 +104,9 @@ def main():
         # 3. Construct DataFrame matching the model's expected columns
         feature_cols = [
             "charging_station_id", "total_chargers", "hour", "day_of_week", 
-            "month", "is_weekend", "hour_sin", "hour_cos", "collection_period"
+            "month", "is_weekend", "hour_sin", "hour_cos", "collection_period",
+            "lag_1_active", "lag_2_active", "lag_1_power_kw",
+            "roll_3_active", "roll_6_active"
         ]
         
         input_data = {
@@ -100,7 +118,12 @@ def main():
             "is_weekend": [is_weekend],
             "hour_sin": [hour_sin],
             "hour_cos": [hour_cos],
-            "collection_period": [collection_period]
+            "collection_period": [collection_period],
+            "lag_1_active": [lag1_active],
+            "lag_2_active": [lag2_active],
+            "lag_1_power_kw": [lag1_power_kw],
+            "roll_3_active": [roll3_active],
+            "roll_6_active": [roll6_active],
         }
             
         X_predict = pd.DataFrame(input_data)[feature_cols]
@@ -127,6 +150,10 @@ def main():
             print("  ⚠️ High Congestion Expected!")
         elif occupancy < 30:
             print("  ✅ Wide Open Availability Expected")
+        
+        if all(v == 0.0 for v in [lag1_active, lag2_active, lag1_power_kw, roll3_active, roll6_active]):
+            print("\n  ⚠ NOTE: Lag/rolling features defaulted to 0.")
+            print("  Provide real historical values for more accurate predictions.")
             
         print("="*50 + "\n")
 
